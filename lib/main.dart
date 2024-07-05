@@ -14,9 +14,6 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
-      ),
       home: PdfViewWidget(),
     );
   }
@@ -106,6 +103,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               controller: pdfController,
               scrollDirection: Axis.horizontal,
               reverse: true,
+              physics: AlwaysScrollableScrollPhysics(),
               onPageChanged: (page) {
                 setState(() {
                   currentPage = --page;
@@ -132,7 +130,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               children: [
                 IconButton(
                   onPressed: () {
-                    pdfController.jumpToPage(1);
+                    pdfController.jumpToPage(6);
                   },
                   icon: const Icon(Icons.home_filled),
                 ),
