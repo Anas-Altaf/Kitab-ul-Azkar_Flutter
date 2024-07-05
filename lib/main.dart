@@ -14,6 +14,9 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.deepOrange,
+      ),
       home: PdfViewWidget(),
     );
   }
@@ -74,7 +77,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
       appBar: AppBar(
         backgroundColor: mainColor,
         shadowColor: Colors.black,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Colors.black,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
