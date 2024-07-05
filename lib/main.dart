@@ -10,7 +10,7 @@ const Color mainColor = Color.fromRGBO(253, 124, 33, 1.0);
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
-//Some Vars
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,16 +27,33 @@ class PdfViewWidget extends StatefulWidget {
 }
 
 class _PdfViewWidgetState extends State<PdfViewWidget> {
-  final pdfController = PdfController(
-    document: PdfDocument.openAsset('assets/k2.pdf'),
-  );
+  late PdfController pdfController;
   final TextEditingController _pageController = TextEditingController();
+  int currentPage = 0;
+  int totalPages = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    pdfController = PdfController(
+      document: PdfDocument.openAsset('assets/k2.pdf'),
+    );
+    _initPdf();
+  }
+
+  Future<void> _initPdf() async {
+    final document = await pdfController.document;
+    totalPages = document.pagesCount;
+    totalPages--;
+    setState(() {});
+  }
+
   void _showErrorDialog(String message) {
     Alert(
       context: context,
       type: AlertType.info,
       title: "Error",
-      desc: "$message",
+      desc: message,
       buttons: [
         DialogButton(
           child: Text(
@@ -50,19 +67,8 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
     ).show();
   }
 
-  int pagesCount = 0;
-  int currentPage = 0;
-  pageLoader(int pageNumber) {
-    setState(() {
-      currentPage = pageNumber;
-      currentPage--;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    int pagesCount = pdfController.pagesCount ?? 0;
-    pagesCount--;
     return Scaffold(
       backgroundColor: mainColor,
       appBar: AppBar(
@@ -82,7 +88,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               ),
             ),
             Text(
-              '$currentPage/${pagesCount ?? 0}',
+              '$currentPage/$totalPages',
               style: TextStyle(
                 color: Colors.white,
               ),
@@ -96,11 +102,21 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
             child: PdfView(
               controller: pdfController,
               scrollDirection: Axis.horizontal,
-              onPageChanged: (pageNumber) {
-                pageLoader(pageNumber);
-              },
               reverse: true,
-              pageSnapping: false,
+              onPageChanged: (page) {
+                setState(() {
+                  currentPage = --page;
+                });
+              },
+              builders: PdfViewBuilders<DefaultBuilderOptions>(
+                options: const DefaultBuilderOptions(),
+                documentLoaderBuilder: (_) =>
+                    const Center(child: CircularProgressIndicator()),
+                pageLoaderBuilder: (_) =>
+                    const Center(child: CircularProgressIndicator()),
+                errorBuilder: (_, error) =>
+                    Center(child: Text(error.toString())),
+              ),
             ),
           ),
           Container(
@@ -113,25 +129,24 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               children: [
                 IconButton(
                   onPressed: () {
-                    pdfController.jumpToPage(6);
+                    pdfController.jumpToPage(1);
                   },
                   icon: const Icon(Icons.home_filled),
                 ),
                 ElevatedButton.icon(
                   onLongPress: () {
                     if (currentPage >= 0) {
-                      pdfController.jumpToPage(currentPage + 11);
+                      pdfController.jumpToPage(currentPage + 10);
                     } else {
-                      pdfController.jumpToPage(0);
+                      pdfController.jumpToPage(1);
                     }
                   },
                   onPressed: () {
-                    if (currentPage >= 0) {
+                    if (currentPage < totalPages) {
                       pdfController.nextPage(
                           duration: Duration(milliseconds: 500),
                           curve: Curves.easeInOut);
                     } else {
-                      pdfController.jumpToPage(0);
                       _showErrorDialog('No more pages');
                     }
                   },
@@ -148,19 +163,18 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                 ),
                 ElevatedButton.icon(
                   onLongPress: () {
-                    if (currentPage >= 0) {
-                      pdfController.jumpToPage(currentPage - 9);
+                    if (currentPage > 0) {
+                      pdfController.jumpToPage(currentPage - 10);
                     } else {
-                      pdfController.jumpToPage(0);
+                      pdfController.jumpToPage(1);
                     }
                   },
                   onPressed: () {
-                    if (currentPage > 0) {
+                    if (currentPage >= 1) {
                       pdfController.previousPage(
                           duration: Duration(milliseconds: 500),
                           curve: Curves.easeInOut);
                     } else {
-                      pdfController.jumpToPage(0);
                       _showErrorDialog('No more pages!');
                     }
                   },
@@ -185,11 +199,10 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                     onSubmitted: (String input) {
                       input = input.trim();
                       int pageEntered = int.tryParse(input) ?? 0;
-                      pageEntered++;
                       if (input.isNotEmpty &&
                           pageEntered >= 0 &&
-                          pageEntered <= pagesCount + 1) {
-                        pdfController.jumpToPage(pageEntered);
+                          pageEntered <= totalPages) {
+                        pdfController.jumpToPage(++pageEntered);
                       } else {
                         _showErrorDialog('Invalid Page');
                       }
@@ -202,5 +215,11 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    pdfController.dispose();
+    super.dispose();
   }
 }
