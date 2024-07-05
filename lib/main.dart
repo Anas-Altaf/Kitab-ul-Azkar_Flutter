@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() {
   runApp(const MainApp());
@@ -29,31 +30,39 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
   final pdfController = PdfController(
     document: PdfDocument.openAsset('assets/k2.pdf'),
   );
+  final TextEditingController _pageController = TextEditingController();
   void _showErrorDialog(String message) {
-    showDialog(
+    Alert(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("⚠ Error"),
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+      type: AlertType.info,
+      title: "Error",
+      desc: "$message",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Ok",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 100,
+        )
+      ],
+    ).show();
   }
 
   int pagesCount = 0;
   int currentPage = 0;
+  pageLoader(int pageNumber) {
+    setState(() {
+      currentPage = pageNumber;
+      currentPage--;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController _pageController = TextEditingController();
+    int pagesCount = pdfController.pagesCount ?? 0;
+    pagesCount--;
     return Scaffold(
       backgroundColor: mainColor,
       appBar: AppBar(
@@ -73,7 +82,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               ),
             ),
             Text(
-              '$currentPage/$pagesCount',
+              '$currentPage/${pagesCount ?? 0}',
               style: TextStyle(
                 color: Colors.white,
               ),
@@ -88,15 +97,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               controller: pdfController,
               scrollDirection: Axis.horizontal,
               onPageChanged: (pageNumber) {
-                setState(() {});
-              },
-              onDocumentLoaded: (document) {
-                setState(() {
-                  pagesCount = document.pagesCount;
-                  currentPage = pdfController.page;
-                  pagesCount--;
-                  currentPage--;
-                });
+                pageLoader(pageNumber);
               },
               reverse: true,
               pageSnapping: false,
@@ -131,7 +132,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                           curve: Curves.easeInOut);
                     } else {
                       pdfController.jumpToPage(0);
-                      _showErrorDialog('No Next Page!');
+                      _showErrorDialog('No more pages');
                     }
                   },
                   label: Text(
@@ -160,7 +161,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                           curve: Curves.easeInOut);
                     } else {
                       pdfController.jumpToPage(0);
-                      _showErrorDialog('No Previous Page!');
+                      _showErrorDialog('No more pages!');
                     }
                   },
                   iconAlignment: IconAlignment.end,
@@ -190,7 +191,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                           pageEntered <= pagesCount + 1) {
                         pdfController.jumpToPage(pageEntered);
                       } else {
-                        _showErrorDialog('Invalid Page!');
+                        _showErrorDialog('Invalid Page');
                       }
                     },
                   ),
