@@ -6,7 +6,8 @@
   - material
 + Dart
 ## ScreenShots
-![Screenshot_20240701_093646](https://github.com/Anas-Altaf/Kitab-ul-Azkar_Flutter/assets/157444488/a91c20cc-2ddc-453a-a7c7-816b8f897342)
+![Screenshot_20240701_093722](https://github.com/Anas-Altaf/Kitab-ul-Azkar_Flutter/assets/157444488/4a3d0f07-137f-4451-abab-2ed968e7eb9a)
+
 
 ## Credits
 + [@Anas-Altaf](https://github.com/Anas-Altaf)
