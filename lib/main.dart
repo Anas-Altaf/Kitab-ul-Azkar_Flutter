@@ -136,7 +136,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                 ElevatedButton.icon(
                   onLongPress: () {
                     if (currentPage >= 0) {
-                      pdfController.jumpToPage(currentPage + 10);
+                      pdfController.jumpToPage(currentPage + 11);
                     } else {
                       pdfController.jumpToPage(1);
                     }
@@ -164,7 +164,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                 ElevatedButton.icon(
                   onLongPress: () {
                     if (currentPage > 0) {
-                      pdfController.jumpToPage(currentPage - 10);
+                      pdfController.jumpToPage(currentPage - 9);
                     } else {
                       pdfController.jumpToPage(1);
                     }
