@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+
+import '../components/url_opener.dart';
+import 'constants.dart';
+import 'imagePaths.dart';
 
 void main() {
   runApp(const MainApp());
 }
-
-const Color mainColor = Color.fromRGBO(253, 124, 33, 1.0);
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -14,7 +17,29 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PdfViewWidget(),
+      theme: ThemeData(
+        colorScheme: const ColorScheme.light(),
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          //centerTitle: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(kPrimaryBorderRadius),
+              bottomRight: Radius.circular(kPrimaryBorderRadius),
+            ),
+          ),
+
+          surfaceTintColor: Colors.black,
+          shadowColor: Colors.black,
+          color: kMainColor,
+          // shadowColor: Colors.black,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+          ),
+        ),
+      ),
+      home: const PdfViewWidget(),
     );
   }
 }
@@ -27,25 +52,38 @@ class PdfViewWidget extends StatefulWidget {
 }
 
 class _PdfViewWidgetState extends State<PdfViewWidget> {
-  late PdfController pdfController;
-  final TextEditingController _pageController = TextEditingController();
-  int currentPage = 0;
-  int totalPages = 0;
+  //getting App Info
+  Future<void> versionFinder() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String version = packageInfo.version;
 
+    setState(() => _version = version);
+  }
+
+  //Other Vars
+  late List<String> pdfImages;
+  late PageController _pageController;
+  imagePaths imagePath = imagePaths();
+  final TextEditingController _pageTextController = TextEditingController();
+  int currentPage = 0;
+  late int totalPages = pdfImages.length;
+  int loadedPage = 0;
+  late String _version = kAppVersion;
   @override
   void initState() {
     super.initState();
-    pdfController = PdfController(
-      document: PdfDocument.openAsset('assets/k2.pdf'),
-    );
-    _initPdf();
+    pdfImages = imagePath.getImages();
+    _pageController = PageController(initialPage: 0);
   }
 
-  Future<void> _initPdf() async {
-    final document = await pdfController.document;
-    totalPages = document.pagesCount;
-    totalPages--;
+  void updatePage() {
     setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _showErrorDialog(String message) {
@@ -56,12 +94,12 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
       desc: message,
       buttons: [
         DialogButton(
-          child: Text(
+          width: 100,
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
             "Ok",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.pop(context),
-          width: 100,
         )
       ],
     ).show();
@@ -70,157 +108,240 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: mainColor,
       appBar: AppBar(
-        backgroundColor: mainColor,
-        shadowColor: Colors.black,
-        surfaceTintColor: Colors.black,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Center(
-              child: Text(
-                'Kitab ul Azkar',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Text(
+        title: const Text('Kitab ul Azkar'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Text(
               '$currentPage/$totalPages',
-              style: TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(fontSize: 17),
             ),
-          ],
+          ),
+          IconButton(
+            onPressed: () {
+              versionFinder();
+              showAboutDialog(
+                context: context,
+                applicationName: 'Kitab ul Azkar',
+                applicationVersion: _version,
+                applicationIcon: const Icon(Icons.book_outlined),
+                applicationLegalese:
+                    'This application was developed by\nCodeCop.\n Developer: Anas Altaf',
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              launchURL(
+                                  urlString: 'https://github.com/Anas-Altaf');
+                            },
+                            icon: const Icon(FontAwesomeIcons.github),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              launchURL(
+                                  urlString: 'https://youtube.com/@azlafix');
+                            },
+                            icon: const Icon(FontAwesomeIcons.youtube),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              launchURL(
+                                  urlString: 'https://wa.me/923104889407');
+                            },
+                            icon: const Icon(FontAwesomeIcons.whatsapp),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              launchURL(urlString: 'https://facebook.com/');
+                            },
+                            icon: const Icon(FontAwesomeIcons.facebook),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              launchURL(
+                                  urlString: 'mailto:anasaltaf35@gmail.com');
+                            },
+                            icon: const Icon(FontAwesomeIcons.envelope),
+                          )
+                        ],
+                      ),
+                    ],
+                  )
+                ],
+              );
+            },
+            icon: const Icon(Icons.info_outline),
+          ),
+        ],
+        leading: IconButton(
+          onPressed: () {
+            _pageController.jumpToPage(5);
+          },
+          icon: const Icon(Icons.home),
         ),
       ),
       body: Column(
         children: [
           Expanded(
-            child: PdfView(
-              controller: pdfController,
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              physics: AlwaysScrollableScrollPhysics(),
-              onPageChanged: (page) {
-                setState(() {
-                  currentPage = --page;
-                });
+            flex: 9,
+            child: PageView.builder(
+              onPageChanged: (index) {
+                currentPage = index;
+                updatePage();
               },
-              builders: PdfViewBuilders<DefaultBuilderOptions>(
-                options: const DefaultBuilderOptions(),
-                documentLoaderBuilder: (_) =>
-                    const Center(child: CircularProgressIndicator()),
-                pageLoaderBuilder: (_) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorBuilder: (_, error) =>
-                    Center(child: Text(error.toString())),
-              ),
+              allowImplicitScrolling: true,
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              padEnds: false,
+              controller: _pageController,
+              scrollDirection: Axis.horizontal,
+              itemCount: pdfImages.length,
+              // itemBuilder: (context, index) {
+              //   currentPage = index;
+              //   totalPages = pdfImages.length;
+              //
+              //   // print(_currentPage??0);
+              //   // print(totalPages??0);
+              //   return Image.asset(
+              //     pdfImages[index],
+              //   );
+              // },
+              itemBuilder: (context, index) {
+                return AnimatedSwitcher(
+                  duration: kPageAnimationDuration,
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      kPrimaryBorderRadius,
+                    ),
+                    child: Image.asset(
+                      pdfImages[index],
+                      key: ValueKey<int>(index),
+                    ),
+                  ),
+                );
+              },
+              reverse: true,
             ),
           ),
-          Container(
-            color: mainColor,
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 15),
-            height: 50,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    pdfController.jumpToPage(6);
-                  },
-                  icon: const Icon(Icons.home_filled),
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kPrimaryBorderRadius),
+                  topRight: Radius.circular(kPrimaryBorderRadius),
                 ),
-                ElevatedButton.icon(
-                  onLongPress: () {
-                    if (currentPage >= 0) {
-                      pdfController.jumpToPage(currentPage + 11);
-                    } else {
-                      pdfController.jumpToPage(1);
-                    }
-                  },
-                  onPressed: () {
-                    if (currentPage < totalPages) {
-                      pdfController.nextPage(
-                          duration: Duration(milliseconds: 500),
-                          curve: Curves.easeInOut);
-                    } else {
-                      _showErrorDialog('No more pages');
-                    }
-                  },
-                  label: Text(
-                    'Next Page',
-                    style: TextStyle(
-                      color: mainColor,
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: mainColor,
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onLongPress: () {
-                    if (currentPage > 0) {
-                      pdfController.jumpToPage(currentPage - 9);
-                    } else {
-                      pdfController.jumpToPage(1);
-                    }
-                  },
-                  onPressed: () {
-                    if (currentPage >= 1) {
-                      pdfController.previousPage(
-                          duration: Duration(milliseconds: 500),
-                          curve: Curves.easeInOut);
-                    } else {
-                      _showErrorDialog('No more pages!');
-                    }
-                  },
-                  iconAlignment: IconAlignment.end,
-                  label: Text(
-                    'Previous Page',
-                    style: TextStyle(color: mainColor),
-                  ),
-                  icon: Icon(
-                    Icons.arrow_forward,
-                    color: mainColor,
-                  ),
-                ),
-                Container(
-                  width: 50,
-                  child: TextField(
-                    controller: _pageController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Page',
-                    ),
-                    onSubmitted: (String input) {
-                      input = input.trim();
-                      int pageEntered = int.tryParse(input) ?? 0;
-                      if (input.isNotEmpty &&
-                          pageEntered >= 0 &&
-                          pageEntered <= totalPages) {
-                        pdfController.jumpToPage(++pageEntered);
+                color: kMainColor,
+              ),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.only(bottom: 3),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onLongPress: () {
+                      if (currentPage >= 0) {
+                        _pageController.jumpToPage(currentPage + 10);
                       } else {
-                        _showErrorDialog('Invalid Page');
+                        _pageController.jumpToPage(1);
                       }
                     },
+                    onPressed: () {
+                      if (currentPage <= totalPages) {
+                        _pageController.nextPage(
+                          duration: kPageAnimationDuration,
+                          curve: kPageAnimationCurve,
+                        );
+                      } else {
+                        _showErrorDialog('No more pages');
+                      }
+                    },
+                    label: const Text(
+                      'Next Page',
+                      style: TextStyle(
+                        color: kMainColor,
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: kMainColor,
+                    ),
                   ),
-                ),
-              ],
+                  ElevatedButton.icon(
+                    onLongPress: () {
+                      if (currentPage >= 0) {
+                        _pageController.jumpToPage(currentPage - 10);
+                      } else {
+                        _pageController.jumpToPage(1);
+                      }
+                    },
+                    onPressed: () {
+                      if (currentPage >= 0) {
+                        _pageController.previousPage(
+                          duration: kPageAnimationDuration,
+                          curve: kPageAnimationCurve,
+                        );
+                      } else {
+                        _showErrorDialog('No more pages!');
+                      }
+                    },
+                    iconAlignment: IconAlignment.end,
+                    label: const Text(
+                      'Prev. Page',
+                      style: TextStyle(color: kMainColor),
+                    ),
+                    icon: const Icon(
+                      Icons.arrow_forward,
+                      color: kMainColor,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 70,
+                    child: TextField(
+                      controller: _pageTextController,
+                      cursorColor: kMainColor,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.black,
+                          ),
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        hintText: '🔎Page',
+                      ),
+                      onSubmitted: (String input) {
+                        input = input.trim();
+                        int pageEntered = int.tryParse(input) ?? 0;
+                        if (input.isNotEmpty &&
+                            pageEntered >= 0 &&
+                            pageEntered <= totalPages) {
+                          _pageController.jumpToPage(pageEntered);
+                        } else {
+                          _showErrorDialog('Invalid Page');
+                        }
+                        _pageTextController.clear();
+                        _pageTextController.clearComposing();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    pdfController.dispose();
-    super.dispose();
   }
 }

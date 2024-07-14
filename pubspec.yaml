@@ -1,24 +1,30 @@
 name: kitabulazkar
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.5
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
-
+flutter_native_splash:
+  color: "#ffffff" # Background color (optional)
+  image: assets/splash.png # Path to your splash image
+  ios: true # Include for iOS
 dependencies:
   flutter:
     sdk: flutter
-  pdfx: ^2.6.0
+  flutter_native_splash: ^2.4.1
+  font_awesome_flutter: ^10.7.0
+  package_info_plus: ^8.0.0
   rename: ^3.0.2
   rflutter_alert: ^2.0.7
-
+  url_launcher: ^6.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/
+    - assets/images/
+    - assets/splash.png
