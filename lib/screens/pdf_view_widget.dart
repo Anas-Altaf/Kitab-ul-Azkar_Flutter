@@ -37,6 +37,7 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
     super.initState();
     pdfImages = imagePath.getImages();
     _pageController = PageController(initialPage: 0);
+    versionFinder();
   }
 
   void updatePage() {
@@ -83,7 +84,6 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
           ),
           IconButton(
             onPressed: () {
-              versionFinder();
               showAboutDialog(
                 context: context,
                 applicationName: 'Kitab ul Azkar',

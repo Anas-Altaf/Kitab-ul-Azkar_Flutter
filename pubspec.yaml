@@ -1,7 +1,7 @@
 name: kitabulazkar
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -9,9 +9,11 @@ flutter_native_splash:
   color: "#ffffff" # Background color (optional)
   image: assets/splash.png # Path to your splash image
   ios: true # Include for iOS
+
 dependencies:
   flutter:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.1
   font_awesome_flutter: ^10.7.0
   package_info_plus: ^8.0.0
@@ -28,3 +30,10 @@ flutter:
   assets:
     - assets/images/
     - assets/splash.png
+  #Launcher Icons
+flutter_launcher_icons:
+  android: "ic_launcher"
+  adaptive_icon_background: "#F27E1C"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/icon.png"
