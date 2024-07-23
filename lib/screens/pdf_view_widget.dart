@@ -66,20 +66,27 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               ),
             ),
           ),
-          IconButton(
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
               onPressed: () async {
                 int selectedPage = -1;
                 try {
                   selectedPage = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) {
-                    return AzkarListScreen();
+                    return const AzkarListScreen();
                   }));
                 } catch (e) {
                   // print(e);
                 }
                 jumpToPageByNumber(selectedPage);
               },
-              icon: const Icon(Icons.manage_search_outlined))
+              icon: const Icon(
+                Icons.manage_search_outlined,
+                size: 25,
+              ),
+            ),
+          ),
         ],
         leading: Builder(
           builder: (context) {
