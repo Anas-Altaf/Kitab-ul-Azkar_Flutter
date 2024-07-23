@@ -1,7 +1,7 @@
 name: kitabulazkar
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.5.0+2
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -15,10 +15,10 @@ dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.1
+  fluttertoast: ^8.2.6
   font_awesome_flutter: ^10.7.0
   package_info_plus: ^8.0.0
   rename: ^3.0.2
-  rflutter_alert: ^2.0.7
   url_launcher: ^6.3.0
 dev_dependencies:
   flutter_test:
@@ -29,7 +29,12 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/background/
     - assets/splash.png
+  fonts:
+    - family: NotoNastaliq
+      fonts:
+        - asset: assets/fonts/NotoNastaliqUrdu.ttf
   #Launcher Icons
 flutter_launcher_icons:
   android: "ic_launcher"

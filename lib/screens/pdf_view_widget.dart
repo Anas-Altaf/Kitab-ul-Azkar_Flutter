@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:kitabulazkar/screens/azkar_list.dart';
 
 import '../assets_path/imagePaths.dart';
-import '../components/url_opener.dart';
+import '../components/menu_bar.dart';
+import '../components/toast_message.dart';
 import '../constants.dart';
 
 class PdfViewWidget extends StatefulWidget {
@@ -15,33 +14,31 @@ class PdfViewWidget extends StatefulWidget {
 }
 
 class _PdfViewWidgetState extends State<PdfViewWidget> {
-  //getting App Info
-  Future<void> versionFinder() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version;
-
-    setState(() => _version = version);
-  }
-
   //Other Vars
   late List<String> pdfImages;
   late PageController _pageController;
   imagePaths imagePath = imagePaths();
-  final TextEditingController _pageTextController = TextEditingController();
   int currentPage = 0;
   late int totalPages = pdfImages.length;
   int loadedPage = 0;
-  late String _version = kAppVersion;
   @override
   void initState() {
     super.initState();
     pdfImages = imagePath.getImages();
-    _pageController = PageController(initialPage: 0);
-    versionFinder();
+    _pageController = PageController(initialPage: 1);
+    ToastUtil.init(context);
   }
 
   void updatePage() {
     setState(() {});
+  }
+
+  void jumpToPageByNumber(int pageNumber) {
+    pageNumber >= 0 && pageNumber < totalPages
+        ? _pageController.jumpToPage(pageNumber)
+        : pageNumber == -1
+            ? ToastUtil.showErrorToast('No Action')
+            : ToastUtil.showErrorToast('Invalid Page');
   }
 
   @override
@@ -50,104 +47,57 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
     super.dispose();
   }
 
-  void _showErrorDialog(String message) {
-    Alert(
-      context: context,
-      type: AlertType.info,
-      title: "Error",
-      desc: message,
-      buttons: [
-        DialogButton(
-          width: 100,
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            "Ok",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-        )
-      ],
-    ).show();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Kitab ul Azkar'),
+        title: const Text(kApplicationName),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
+            padding: const EdgeInsets.only(
+              right: 20.0,
+              top: 3.0,
+            ),
             child: Text(
-              '$currentPage/$totalPages',
-              style: const TextStyle(fontSize: 17),
+              '$currentPage/${totalPages - 1}',
+              style: const TextStyle(
+                fontSize: 18,
+              ),
             ),
           ),
           IconButton(
-            onPressed: () {
-              showAboutDialog(
-                context: context,
-                applicationName: 'Kitab ul Azkar',
-                applicationVersion: _version,
-                applicationIcon: const Icon(Icons.book_outlined),
-                applicationLegalese:
-                    'This application was developed by\nCodeCop.\n Developer: Anas Altaf',
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              launchURL(
-                                  urlString: 'https://github.com/Anas-Altaf');
-                            },
-                            icon: const Icon(FontAwesomeIcons.github),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              launchURL(
-                                  urlString: 'https://youtube.com/@azlafix');
-                            },
-                            icon: const Icon(FontAwesomeIcons.youtube),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              launchURL(
-                                  urlString: 'https://wa.me/923104889407');
-                            },
-                            icon: const Icon(FontAwesomeIcons.whatsapp),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              launchURL(urlString: 'https://facebook.com/');
-                            },
-                            icon: const Icon(FontAwesomeIcons.facebook),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              launchURL(
-                                  urlString: 'mailto:anasaltaf35@gmail.com');
-                            },
-                            icon: const Icon(FontAwesomeIcons.envelope),
-                          )
-                        ],
-                      ),
-                    ],
-                  )
-                ],
-              );
-            },
-            icon: const Icon(Icons.info_outline),
-          ),
+              onPressed: () async {
+                int selectedPage = -1;
+                try {
+                  selectedPage = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return AzkarListScreen();
+                  }));
+                } catch (e) {
+                  // print(e);
+                }
+                jumpToPageByNumber(selectedPage);
+              },
+              icon: const Icon(Icons.manage_search_outlined))
         ],
-        leading: IconButton(
-          onPressed: () {
-            _pageController.jumpToPage(5);
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () async {
+                Scaffold.of(context).openDrawer();
+              },
+            );
           },
-          icon: const Icon(Icons.home),
+        ),
+      ),
+      drawer: SafeArea(
+        child: NavDrawer(
+          onResult: (selectedPage) {
+            jumpToPageByNumber(selectedPage);
+            //print('pdf View Widget Page : $selectedPage');
+          },
         ),
       ),
       body: Column(
@@ -165,16 +115,6 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
               controller: _pageController,
               scrollDirection: Axis.horizontal,
               itemCount: pdfImages.length,
-              // itemBuilder: (context, index) {
-              //   currentPage = index;
-              //   totalPages = pdfImages.length;
-              //
-              //   // print(_currentPage??0);
-              //   // print(totalPages??0);
-              //   return Image.asset(
-              //     pdfImages[index],
-              //   );
-              // },
               itemBuilder: (context, index) {
                 return AnimatedSwitcher(
                   duration: kPageAnimationDuration,
@@ -212,91 +152,45 @@ class _PdfViewWidgetState extends State<PdfViewWidget> {
                 children: [
                   ElevatedButton.icon(
                     onLongPress: () {
-                      if (currentPage >= 0) {
-                        _pageController.jumpToPage(currentPage + 10);
-                      } else {
-                        _pageController.jumpToPage(1);
-                      }
+                      jumpToPageByNumber(currentPage + 10);
                     },
                     onPressed: () {
-                      if (currentPage <= totalPages) {
-                        _pageController.nextPage(
-                          duration: kPageAnimationDuration,
-                          curve: kPageAnimationCurve,
-                        );
-                      } else {
-                        _showErrorDialog('No more pages');
-                      }
+                      _pageController.nextPage(
+                        duration: kPageAnimationDuration,
+                        curve: kPageAnimationCurve,
+                      );
                     },
                     label: const Text(
                       'Next Page',
                       style: TextStyle(
-                        color: kMainColor,
+                        color: Colors.black,
                       ),
                     ),
                     icon: const Icon(
                       Icons.arrow_back,
-                      color: kMainColor,
+                      color: Colors.black,
                     ),
                   ),
                   ElevatedButton.icon(
                     onLongPress: () {
-                      if (currentPage >= 0) {
-                        _pageController.jumpToPage(currentPage - 10);
-                      } else {
-                        _pageController.jumpToPage(1);
-                      }
+                      jumpToPageByNumber(currentPage - 10);
                     },
                     onPressed: () {
-                      if (currentPage >= 0) {
-                        _pageController.previousPage(
-                          duration: kPageAnimationDuration,
-                          curve: kPageAnimationCurve,
-                        );
-                      } else {
-                        _showErrorDialog('No more pages!');
-                      }
+                      _pageController.previousPage(
+                        duration: kPageAnimationDuration,
+                        curve: kPageAnimationCurve,
+                      );
                     },
                     iconAlignment: IconAlignment.end,
                     label: const Text(
                       'Prev. Page',
-                      style: TextStyle(color: kMainColor),
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
                     icon: const Icon(
                       Icons.arrow_forward,
-                      color: kMainColor,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 70,
-                    child: TextField(
-                      controller: _pageTextController,
-                      cursorColor: kMainColor,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.black,
-                          ),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        hintText: '🔎Page',
-                      ),
-                      onSubmitted: (String input) {
-                        input = input.trim();
-                        int pageEntered = int.tryParse(input) ?? 0;
-                        if (input.isNotEmpty &&
-                            pageEntered >= 0 &&
-                            pageEntered <= totalPages) {
-                          _pageController.jumpToPage(pageEntered);
-                        } else {
-                          _showErrorDialog('Invalid Page');
-                        }
-                        _pageTextController.clear();
-                        _pageTextController.clearComposing();
-                      },
+                      color: Colors.black,
                     ),
                   ),
                 ],
