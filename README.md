@@ -30,7 +30,7 @@ kitab_ul_azkar/
 ```
 
 ## 🖼️ Screenshots
-<img src="[docs/ss/dashboard-dark.png](https://github.com/Anas-Altaf/Kitab-ul-Azkar_Flutter/assets/157444488/4a3d0f07-137f-4451-abab-2ed968e7eb9a)" alt="Dashboard Dark" width="400" />
+<img src="https://github.com/Anas-Altaf/Kitab-ul-Azkar_Flutter/assets/157444488/4a3d0f07-137f-4451-abab-2ed968e7eb9a" alt="Dashboard Dark" width="400" />
 
 ## 🚀 Getting Started
 
